@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class GridCell : MonoBehaviour
 {
-    public int gCost;
-    public int hCost;
-    public GridCell ParentNode;
+    [HideInInspector] public int gCost;
+    [HideInInspector] public int hCost;
+    [HideInInspector]  public GridCell ParentNode;
     private bool m_isWall = false;
     private float size;
 

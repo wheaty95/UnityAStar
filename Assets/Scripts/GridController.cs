@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GridController<T>
+[System.Serializable]
+public class GridController : MonoBehaviour
 {
     public enum Axis
     {
@@ -11,17 +12,43 @@ public class GridController<T>
         Z
     }
 
-    private int width;
-    private int height;
-    private float cellSize;
-    private Vector3 origin;
-    private int[,] gridArray;
-    private Axis axis;
+    [SerializeField] [HideInInspector] private int width;
+    [SerializeField] [HideInInspector] private int height;
+    [SerializeField] [HideInInspector] private float cellSize;
+    [SerializeField] [HideInInspector] private Vector3 origin;
+    [SerializeField] [HideInInspector] private int[,] gridArray;
+    [SerializeField] [HideInInspector] private Axis axis;
 
-    private T[,] cells;
+    [SerializeField] public CellList cells;
 
-    public GridController(int width, int height, float cellSize, Vector3 origin, bool drawLines, Axis axis, Func<Vector3, T> GridPointAdded)
+    [System.Serializable]
+    public class RowContainer
     {
+        public List<GridCell> ContainedList = new List<GridCell>();
+    }
+
+    [System.Serializable]
+    public class CellList
+    {
+        public List<RowContainer> row = new List<RowContainer>();
+    }
+
+    private List<LineRenderer> lines;
+
+    public void Config(int width, int height, float cellSize, Vector3 origin, bool drawLines, Axis axis, Func<Vector3, GridCell> GridPointAdded)
+    {
+        if (lines != null)
+        {
+            foreach (LineRenderer line in lines)
+            {
+                if (line != null)
+                {
+                    GameObject.Destroy(line.gameObject);
+                }
+            }
+        }
+        lines = new List<LineRenderer>();
+
         this.width = width;
         this.height = height;
         this.cellSize = cellSize;
@@ -29,30 +56,34 @@ public class GridController<T>
         this.axis = axis;
 
         gridArray = new int[width,height];
-        cells = new T[width, height];
+        cells = new CellList();
 
         for (int x = 0; x < gridArray.GetLength(0); x++)
         {
+            cells.row.Add(new RowContainer());
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
                 if (GridPointAdded != null)
                 {
-                    cells[x, y] = GridPointAdded(GetWorldPos(x, y));
-                }
-
-                if (drawLines)
-                {
-                    Line.DrawLine(GetWorldPos(x, y), GetWorldPos(x, y + 1), lineAlignment: LineAlignment.View);
-                    Line.DrawLine(GetWorldPos(x, y), GetWorldPos(x + 1, y), lineAlignment: LineAlignment.View);
+                    cells.row[x].ContainedList.Add(GridPointAdded(GetWorldPos(x, y)));
                 }
             }
         }
+    }
 
-        if (drawLines)
+    public void DrawLines(Transform parent)
+    {
+        for (int x = 0; x < gridArray.GetLength(0); x++)
         {
-            Line.DrawLine(GetWorldPos(0, height), GetWorldPos(width, height), lineAlignment: LineAlignment.View);
-            Line.DrawLine(GetWorldPos(width, 0), GetWorldPos(width, height), lineAlignment: LineAlignment.View);
+            for (int y = 0; y < gridArray.GetLength(1); y++)
+            {
+                lines.Add(Line.DrawLine(GetWorldPos(x, y), GetWorldPos(x, y + 1), parent, lineAlignment: LineAlignment.View));
+                lines.Add(Line.DrawLine(GetWorldPos(x, y), GetWorldPos(x + 1, y), parent, lineAlignment: LineAlignment.View));
+            }
         }
+
+        lines.Add(Line.DrawLine(GetWorldPos(0, height), GetWorldPos(width, height), parent, lineAlignment: LineAlignment.View));
+        lines.Add(Line.DrawLine(GetWorldPos(width, 0), GetWorldPos(width, height), parent, lineAlignment: LineAlignment.View));
     }
 
     public Vector3 GetWorldPos(int x, int y)
@@ -103,54 +134,54 @@ public class GridController<T>
 
     public bool IsValidPos(int x, int y)
     {
-        return x >= 0 && x < cells.GetLength(0) && y >= 0 && y < cells.GetLength(1);
+        return x >= 0 && x < width && y >= 0 && y < height;
     }
 
-    public T GetGridPoint(Vector3 worldPos)
+    public GridCell GetGridPoint(Vector3 worldPos)
     {
         int x, y;
         GetGridXY(worldPos, out x, out y);
         return GetGridPoint(x, y);
     }
 
-    public T GetGridPoint(int x, int y)
+    public GridCell GetGridPoint(int x, int y)
     {
         if (IsValidPos(x, y))
         {
-            return cells[x, y];
+            return cells.row[x].ContainedList[y];
         }
         return default;
     }
 
-    public T GetGridPoint(Vector2Int point)
+    public GridCell GetGridPoint(Vector2Int point)
     {
         if (IsValidPos(point.x, point.y))
         {
-            return cells[point.x, point.y];
+            return cells.row[point.x].ContainedList[point.y];
         }
         return default;
     }
 
-    public T[,] GetCells()
+    public GridCell[,] GetCells()
     {
-        return cells;
+        return null;
     }
 
-    public T[] GetNeighboringCells(Vector3 worldPos, bool diag = false)
+    public GridCell[] GetNeighboringCells(Vector3 worldPos, bool diag = false)
     {
         int x, y;
         GetGridXY(worldPos, out x, out y);
         return GetNeighboringCells(x, y, diag);
     }
 
-    public T[] GetNeighboringCells(int x, int y, bool diag = false)
+    public GridCell[] GetNeighboringCells(int x, int y, bool diag = false)
     {
-        List<T> neighbours = new List<T>();
+        List<GridCell> neighbours = new List<GridCell>();
 
-        T north = GetGridPoint(x, y + 1);
-        T south = GetGridPoint(x, y - 1);
-        T east = GetGridPoint(x + 1, y);
-        T west = GetGridPoint(x - 1, y);
+        GridCell north = GetGridPoint(x, y + 1);
+        GridCell south = GetGridPoint(x, y - 1);
+        GridCell east = GetGridPoint(x + 1, y);
+        GridCell west = GetGridPoint(x - 1, y);
 
         if (north != null)
         {
@@ -174,10 +205,10 @@ public class GridController<T>
 
         if (diag)
         {
-            T northEast = GetGridPoint(x + 1, y + 1);
-            T northWest = GetGridPoint(x - 1, y + 1);
-            T southEast = GetGridPoint(x + 1, y - 1);
-            T southWest = GetGridPoint(x - 1, y - 1);
+            GridCell northEast = GetGridPoint(x + 1, y + 1);
+            GridCell northWest = GetGridPoint(x - 1, y + 1);
+            GridCell southEast = GetGridPoint(x + 1, y - 1);
+            GridCell southWest = GetGridPoint(x - 1, y - 1);
 
             if (northEast != null)
             {

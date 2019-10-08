@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class PathFinder
 {
-    public static List<GridCell> FindPath(GridController<GridCell> grid, Vector2Int start, Vector2Int end, bool diag = false)
+    public static List<GridCell> FindPath(GridController grid, Vector2Int start, Vector2Int end, bool diag = false)
     {
         List<GridCell> Path = null;
         GridCell StartNode = grid.GetGridPoint(start);

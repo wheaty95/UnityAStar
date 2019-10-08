@@ -4,24 +4,16 @@ using UnityEngine;
 
 public static class Line
 {
-    public static LineRenderer DrawLine(Vector3 start, Vector3 end, GameObject parent = null, bool useWorldSpace = true, Material material = null, LineAlignment lineAlignment = LineAlignment.TransformZ, params Vector3[] additionalPoints)
+    public static LineRenderer DrawLine(Vector3 start, Vector3 end, Transform parent = null, bool useWorldSpace = true, Material material = null, LineAlignment lineAlignment = LineAlignment.TransformZ, params Vector3[] additionalPoints)
     {
         LineRenderer line = null;
+        GameObject go = new GameObject("Line");
 
-        if (parent == null)
+        if (parent != null)
         {
-            parent = new GameObject("Line");
-
-            line = parent.GetComponent<LineRenderer>();
-            if (line == null)
-            {
-                line = parent.AddComponent<LineRenderer>();
-            }
+            go.transform.parent = parent;
         }
-        else
-        {
-            line = parent.AddComponent<LineRenderer>();
-        }
+        line = go.AddComponent<LineRenderer>();
 
         List<Vector3> points = new List<Vector3>();
         points.Add(start);
@@ -37,7 +29,7 @@ public static class Line
         {
             line.material = material;
         }
-
+        UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Line");
         return line;
     }
 }
