@@ -16,8 +16,18 @@ public class GridCreator : MonoBehaviour
 
     void Awake()
     {
+        CreateGrid();
+    }
+
+    public void CreateGrid()
+    {
         m_grid = new GridController<GridCell>(m_gridWidth, m_gridHeight, m_cellSize,
-            transform.position, true, GridController<GridCell>.Axis.Y, CellAdded);
+            transform.position, false, GridController<GridCell>.Axis.Y, CellAdded);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position + (new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize) / 2), new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize));
     }
 
     private void Start()
@@ -36,17 +46,13 @@ public class GridCreator : MonoBehaviour
     private GridCell CellAdded(Vector3 worldPos)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Vector3 centre = Vector3.zero;
-        if (m_centreCell)
-        {
-            centre = new Vector3(m_cellSize, 0, m_cellSize) * 0.5f;
-        }
+        Vector3 centre = m_centreCell ? new Vector3(m_cellSize, 0, m_cellSize) * 0.5f : Vector3.zero;
         go.transform.position = worldPos + centre;
         GridCell cell = go.AddComponent<GridCell>();
-
-        bool isWall = Random.Range(0, 10) < 1;
-        cell.SetWall(isWall);
-        go.SetActive(isWall);
+        cell.Config(m_cellSize);
+        go.transform.localScale = Vector3.one * m_cellSize;
+        //go.SetActive(true);
+        UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Go");
         return cell;
     }
 }

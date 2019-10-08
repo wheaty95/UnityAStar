@@ -1,0 +1,11 @@
+Clean Up grid assessors: GetGridXY etc
+
+
+------
+Grid: Get X and Y Count
+
+------
+Pathfinding: Add weights to cells. Use layers and box casts
+
+------
+Think about how to make the grid in Edit time

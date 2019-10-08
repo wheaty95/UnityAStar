@@ -139,3 +139,4 @@ MonoBehaviour:
   start: {x: 0, y: 0}
   end: {x: 1, y: 6}
   diag: 1
+  speed: 20

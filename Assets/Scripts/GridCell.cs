@@ -9,6 +9,14 @@ public class GridCell : MonoBehaviour
     public int hCost;
     public GridCell ParentNode;
     private bool m_isWall = false;
+    private float size;
+
+    public void Config(float size)
+    {
+        this.size = size;
+        bool isWall = false;// Physics.CheckBox(transform.position, Vector3.one * size);
+        SetWall(isWall);
+    }
 
     public int FCost()
     {
@@ -23,5 +31,6 @@ public class GridCell : MonoBehaviour
     public void SetWall(bool wall)
     {
         m_isWall = wall;
+        gameObject.SetActive(wall);
     }
 }
