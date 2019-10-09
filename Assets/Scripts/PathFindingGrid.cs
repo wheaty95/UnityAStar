@@ -10,6 +10,7 @@ public class PathFindingGrid : MonoBehaviour
     {
         [SerializeField] public LayerMask layer;
         [SerializeField] public int weight;
+        [SerializeField] public bool walkable;
     }
 
     [SerializeField] [HideInInspector] GridController m_grid;
@@ -20,11 +21,16 @@ public class PathFindingGrid : MonoBehaviour
     [SerializeField] private bool m_centreCell;
     [SerializeField] private List<Weights> m_weights;
 
+    public bool IsInLayerMask(LayerMask mask, int layer)
+    {
+        return mask == (mask | (1 << layer));
+    }
+
     public int GetWeight(LayerMask mask)
     {
         foreach (Weights layerMask in m_weights)
         {
-            if (layerMask.layer == mask)
+            if (IsInLayerMask(layerMask.layer, mask.value))
             {
                 return layerMask.weight;
             }
@@ -32,13 +38,23 @@ public class PathFindingGrid : MonoBehaviour
         return 0;
     }
 
+    public bool GetIsWalkable(LayerMask mask)
+    {
+        foreach (Weights layerMask in m_weights)
+        {
+            if (IsInLayerMask(layerMask.layer, mask.value))
+            {
+                return layerMask.walkable;
+            }
+        }
+        return true;
+    }
 
     public void Create()
     {
         Clear();
         m_grid = gameObject.AddComponent<GridController>();
         m_grid.Config(m_gridWidth, m_gridHeight, m_cellSize, transform.position, true, GridController.Axis.Y, CellAdded);
-        m_grid.DrawLines(transform);
     }
 
     public GridController GetGrid()
@@ -79,7 +95,7 @@ public class PathFindingGrid : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(transform.position + (new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize) / 2), new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize));
+        //Gizmos.DrawWireCube(transform.position + (new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize) / 2), new Vector3(m_gridWidth * m_cellSize, 1, m_gridHeight * m_cellSize));
     }
 
     private GridCell CellAdded(Vector3 worldPos)

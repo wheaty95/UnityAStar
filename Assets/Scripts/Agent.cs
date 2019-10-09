@@ -28,7 +28,11 @@ public class Agent : MonoBehaviour
             if (cellIndex == path.Count)
             {
                 Vector2Int gridSize = grid.GetGridSize();
-                path = PathFinder.FindPath(grid.GetGrid(), grid.GetGridXY(transform.position), new Vector2Int(Random.Range(0,gridSize.x), Random.Range(0, gridSize.y)), diag);
+                do
+                {
+                    path = PathFinder.FindPath(grid.GetGrid(), grid.GetGridXY(transform.position), new Vector2Int(Random.Range(0, gridSize.x), Random.Range(0, gridSize.y)), diag);
+                }
+                while (path == null);
                 cellIndex = 0;
             }
         }
@@ -46,11 +50,7 @@ public class Agent : MonoBehaviour
             {
                 if (prev != null)
                 {
-                    Gizmos.DrawLine(prev.transform.position, cell.transform.position);
-                }
-                else
-                {
-                    Gizmos.DrawLine(transform.position, cell.transform.position);
+                    Gizmos.DrawLine(prev.transform.position + (Vector3.up*2), cell.transform.position + (Vector3.up * 2));
                 }
                 prev = cell;
             }

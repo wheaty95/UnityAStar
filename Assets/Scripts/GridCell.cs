@@ -11,6 +11,7 @@ public class GridCell : MonoBehaviour
     [HideInInspector] public int weight;
     [HideInInspector]  public GridCell ParentNode;
     private bool m_isWall = false;
+    public bool Walkable = true;
     private float size;
 
     public void Config(PathFindingGrid grid, float size)
@@ -20,10 +21,11 @@ public class GridCell : MonoBehaviour
         SetWall(isWall);
 
         RaycastHit hit;
-        if (Physics.Raycast(transform.position + (Vector3.up * 1), -Vector3.up, out hit, Mathf.Infinity))
+        if (Physics.Raycast(transform.position + (Vector3.up * 10), -Vector3.up, out hit, Mathf.Infinity))
         {
             LayerMask layer = hit.transform.gameObject.layer;
             weight = grid.GetWeight(layer);
+            Walkable = grid.GetIsWalkable(layer);
             Debug.Log(weight);
         }
     }

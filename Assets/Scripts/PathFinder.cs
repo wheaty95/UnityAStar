@@ -40,11 +40,11 @@ public static class PathFinder
 
             foreach (GridCell NeighborNode in grid.GetNeighboringCells(CurrentNode.transform.position, diag))
             {
-                if (NeighborNode.IsWall() || ClosedList.Contains(NeighborNode))
+                if (NeighborNode.IsWall() || !NeighborNode.Walkable || ClosedList.Contains(NeighborNode))
                 {
                     continue;
                 }
-                int MoveCost = CurrentNode.gCost + GetManhattenDistance(CurrentNode, NeighborNode);
+                int MoveCost = CurrentNode.gCost + GetManhattenDistance(CurrentNode, NeighborNode) + NeighborNode.weight;
 
                 if (MoveCost < NeighborNode.gCost || !OpenList.Contains(NeighborNode))
                 {
