@@ -5,7 +5,7 @@ using UnityEngine;
 public class Agent : MonoBehaviour
 {
     List<GridCell> path;
-    GridController<GridCell> grid;
+    public PathFindingGrid grid;
     public Vector2Int start;
     public Vector2Int end;
     public bool diag = false;
@@ -13,10 +13,10 @@ public class Agent : MonoBehaviour
     private int cellIndex = 0;
     private bool finished = false;
 
-    public void Config(GridController<GridCell> grid)
+    private void Start()
     {
-        this.grid = grid;
-        path = PathFinder.FindPath(grid, start, end, diag);
+        transform.position = grid.GetGridXY(start);
+        path = PathFinder.FindPath(grid.GetGrid(), start, end, diag);
     }
 
     private void Update()
@@ -27,9 +27,12 @@ public class Agent : MonoBehaviour
             cellIndex++;
             if (cellIndex == path.Count)
             {
-                int x, y;
-                grid.GetGridXY(transform.position, out x, out y);
-                path = PathFinder.FindPath(grid, new Vector2Int(x,y), new Vector2Int(Random.Range(0,9), Random.Range(0, 9)), diag);
+                Vector2Int gridSize = grid.GetGridSize();
+                do
+                {
+                    path = PathFinder.FindPath(grid.GetGrid(), grid.GetGridXY(transform.position), new Vector2Int(Random.Range(0, gridSize.x), Random.Range(0, gridSize.y)), diag);
+                }
+                while (path == null);
                 cellIndex = 0;
             }
         }
@@ -47,11 +50,7 @@ public class Agent : MonoBehaviour
             {
                 if (prev != null)
                 {
-                    Gizmos.DrawLine(prev.transform.position, cell.transform.position);
-                }
-                else
-                {
-                    Gizmos.DrawLine(transform.position, cell.transform.position);
+                    Gizmos.DrawLine(prev.transform.position + (Vector3.up*2), cell.transform.position + (Vector3.up * 2));
                 }
                 prev = cell;
             }

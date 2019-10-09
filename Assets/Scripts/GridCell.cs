@@ -3,19 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class GridCell : MonoBehaviour
 {
-    public int gCost;
-    public int hCost;
-    public GridCell ParentNode;
+    [HideInInspector] public int gCost;
+    [HideInInspector] public int hCost;
+    [HideInInspector] public int weight;
+    [HideInInspector]  public GridCell ParentNode;
     private bool m_isWall = false;
+    public bool Walkable = true;
     private float size;
 
-    public void Config(float size)
+    public void Config(PathFindingGrid grid, float size)
     {
         this.size = size;
-        bool isWall = false;// Physics.CheckBox(transform.position, Vector3.one * size);
+        bool isWall = false;
         SetWall(isWall);
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + (Vector3.up * 10), -Vector3.up, out hit, Mathf.Infinity))
+        {
+            LayerMask layer = hit.transform.gameObject.layer;
+            weight = grid.GetWeight(layer);
+            Walkable = grid.GetIsWalkable(layer);
+            Debug.Log(weight);
+        }
     }
 
     public int FCost()
