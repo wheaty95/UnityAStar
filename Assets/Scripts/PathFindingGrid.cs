@@ -5,12 +5,33 @@ using UnityEngine;
 
 public class PathFindingGrid : MonoBehaviour
 {
+    [System.Serializable]
+    public class Weights
+    {
+        [SerializeField] public LayerMask layer;
+        [SerializeField] public int weight;
+    }
+
     [SerializeField] [HideInInspector] GridController m_grid;
 
     [SerializeField] private int m_gridWidth;
     [SerializeField] private int m_gridHeight;
     [SerializeField] private float m_cellSize;
     [SerializeField] private bool m_centreCell;
+    [SerializeField] private List<Weights> m_weights;
+
+    public int GetWeight(LayerMask mask)
+    {
+        foreach (Weights layerMask in m_weights)
+        {
+            if (layerMask.layer == mask)
+            {
+                return layerMask.weight;
+            }
+        }
+        return 0;
+    }
+
 
     public void Create()
     {
@@ -69,9 +90,9 @@ public class PathFindingGrid : MonoBehaviour
         Vector3 centre = m_centreCell ? new Vector3(m_cellSize, 0, m_cellSize) * 0.5f : Vector3.zero;
         go.transform.position = worldPos + centre;
         GridCell cell = go.AddComponent<GridCell>();
-        cell.Config(m_cellSize);
+        cell.Config(this,m_cellSize);
         //go.transform.localScale = Vector3.one * m_cellSize;
-        go.SetActive(true);
+        go.SetActive(false);
         UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Go");
         return cell;
     }
